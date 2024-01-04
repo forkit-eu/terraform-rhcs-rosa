@@ -88,6 +88,7 @@ module "vpc" {
 ############################
 module "rosa_cluster_classic" {
   source = "./modules/rosa-cluster-classic"
+  count  = var.create_rosa ? 1 : 0
 
   cluster_name          = var.cluster_name
   operator_role_prefix  = local.operator_role_prefix

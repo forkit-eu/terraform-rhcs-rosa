@@ -5,6 +5,12 @@ variable "ocm_environment" {
 
 # Cluster
 
+variable "create_cluster" {
+  description = "Create the ROSA cluster."
+  type        = bool
+  default     = false
+}
+
 variable "openshift_version" {
   type    = string
   default = "4.13.13"
