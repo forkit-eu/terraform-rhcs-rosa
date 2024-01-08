@@ -5,6 +5,8 @@
 # }
 
 resource "aws_vpc" "site" {
+  count = var.vpc_existing == "" ? 1 : 0
+  
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -16,15 +18,19 @@ resource "aws_vpc" "site" {
   )
 }
 
+data "aws_vpc" "site" {
+  id = var.vpc_existing == "" ? aws_vpc.site[0].id : var.vpc_existing
+}
+
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.site.id
+  vpc_id       = data.aws_vpc.site.id
   service_name = "com.amazonaws.${data.aws_region.current.name}.s3"
 }
 
 resource "aws_subnet" "public" {
   count = var.subnet_count
 
-  vpc_id            = aws_vpc.site.id
+  vpc_id            = data.aws_vpc.site.id
   cidr_block        = cidrsubnet(var.vpc_cidr, var.subnet_count * 2, count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
   tags = merge(
@@ -38,7 +44,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   count = var.subnet_count
 
-  vpc_id            = aws_vpc.site.id
+  vpc_id            = data.aws_vpc.site.id
   cidr_block        = cidrsubnet(var.vpc_cidr, var.subnet_count * 2, count.index + var.subnet_count)
   availability_zone = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
   tags = merge(
@@ -54,7 +60,7 @@ resource "aws_subnet" "private" {
 # Internet gateway
 #
 resource "aws_internet_gateway" "site" {
-  vpc_id = aws_vpc.site.id
+  vpc_id = data.aws_vpc.site.id
   tags = merge(
     {
       "Name" = "${var.name_prefix}-igw"
@@ -100,7 +106,7 @@ resource "aws_nat_gateway" "public" {
 # Route tables
 #
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.site.id
+  vpc_id = data.aws_vpc.site.id
   tags = merge(
     {
       "Name" = "${var.name_prefix}-public"
@@ -112,7 +118,7 @@ resource "aws_route_table" "public" {
 resource "aws_route_table" "private" {
   count = var.subnet_count
 
-  vpc_id = aws_vpc.site.id
+  vpc_id = data.aws_vpc.site.id
   tags = merge(
     {
       "Name" = join("-", [var.name_prefix, "rtb", "private${count.index}", data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]])

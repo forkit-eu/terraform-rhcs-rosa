@@ -142,6 +142,12 @@ variable "create_vpc" {
   default     = false
 }
 
+variable "vpc_existing" {
+  description = "Use an existing vpc."
+  type        = string
+  default     = ""
+}
+
 variable "vpc_public_subnets_ids" {
   description = "Create the vpc resources."
   type        = list(string)

@@ -81,6 +81,7 @@ module "vpc" {
   name_prefix  = var.cluster_name
   subnet_count = var.multi_az ? 3 : 1
   vpc_cidr     = var.machine_cidr
+  vpc_existing = var.vpc_existing
 }
 
 ############################
