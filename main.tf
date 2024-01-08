@@ -89,7 +89,7 @@ module "vpc" {
 ############################
 module "rosa_cluster_classic" {
   source = "./modules/rosa-cluster-classic"
-  count  = var.create_rosa ? 1 : 0
+  count  = var.create_cluster ? 1 : 0
 
   cluster_name          = var.cluster_name
   operator_role_prefix  = local.operator_role_prefix
@@ -113,7 +113,7 @@ module "rosa_cluster_classic" {
 
 module "rhcs_machine_pool" {
   source   = "./modules/machine-pool"
-  for_each = var.machine_pools
+  for_each = var.create_cluster ? var.machine_pools : {}
 
   cluster_id          = module.rosa_cluster_classic.cluster_id
   name                = each.value.name
@@ -134,7 +134,7 @@ module "rhcs_machine_pool" {
 
 module "rhcs_identity_provider" {
   source   = "./modules/idp"
-  for_each = var.idp
+  for_each = var.create_cluster ? var.idp : {}
 
   cluster_id     = module.rosa_cluster_classic.cluster_id
   name           = each.value.name
