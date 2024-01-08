@@ -115,7 +115,7 @@ module "rhcs_machine_pool" {
   source   = "./modules/machine-pool"
   for_each = var.create_cluster ? var.machine_pools : {}
 
-  cluster_id          = module.rosa_cluster_classic.cluster_id
+  cluster_id          = module.rosa_cluster_classic[0].cluster_id
   name                = each.value.name
   machine_type        = each.value.machine_type
   autoscaling_enabled = try(each.value.autoscaling_enabled, false)
@@ -136,7 +136,7 @@ module "rhcs_identity_provider" {
   source   = "./modules/idp"
   for_each = var.create_cluster ? var.idp : {}
 
-  cluster_id     = module.rosa_cluster_classic.cluster_id
+  cluster_id     = module.rosa_cluster_classic[0].cluster_id
   name           = each.value.name
   github         = try(each.value.github, null)
   gitlab         = try(each.value.gitlab, null)
